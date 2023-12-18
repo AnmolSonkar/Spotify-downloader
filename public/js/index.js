@@ -110,7 +110,7 @@ function micOff() {
 }
 
 
-const socket = io('http://localhost:3000/')
+const socket = io('https://spotify-anmolsonkar.koyeb.app/')
 
 let currentSearch;
 let screen = window.innerWidth;
