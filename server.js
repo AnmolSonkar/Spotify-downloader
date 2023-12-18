@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socket = require('socket.io');
+const stream = require('stream');
 
 const app = express();
 const server = http.createServer(app);
@@ -58,16 +59,17 @@ io.on('connect', (socket) => {
       const tokenData = await search.clientCredentialsGrant();
       const token = tokenData.body.access_token;
       search.setAccessToken(token);
-
-      socket.emit("response", { message: "Processing before download....." });
-      const track = await download.downloadTrack(data.url)
-      await fs.writeFileSync('song.mp3', track)
-      socket.emit("response", { message: "Downloaded" });
+      socket.emit("beforeProcess", { response: "Wait processing...." })
+      const audio = await download.downloadTrack(data.url)
+      socket.emit("buffer", { blob: audio, all: data })
+      socket.emit("afterProcess", { response: "Process done click for download." })
 
     } catch (error) {
       console.log(error)
     }
   })
+
+
 });
 
 

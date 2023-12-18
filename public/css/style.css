@@ -133,16 +133,15 @@ header>img {
   width: 100%;
   position: fixed;
   bottom: 0;
-  display: none;
+  display: flex;
   justify-content: center;
-  background-color: #282828;
   align-items: center;
   height: 20vh;
 }
 
 .footer>iframe {
   width: 100%;
-  display: none;
+  display: block;
   margin-top: 10vh;
 }
 
