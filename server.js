@@ -51,18 +51,19 @@ io.on('connect', (socket) => {
     }
   });
 
+  socket.on("select", (data) => {
+    socket.emit("select", data)
+  })
+
 
   socket.on('download', async (data) => {
     try {
-
       const tokenData = await search.clientCredentialsGrant();
       const token = tokenData.body.access_token;
       search.setAccessToken(token);
-      socket.emit("beforeProcess", { response: "Wait processing...." })
+      socket.emit("loading", { response: "Loading...." })
       const audio = await download.downloadTrack(data.url)
       socket.emit("buffer", { blob: audio, all: data })
-      socket.emit("afterProcess", { response: "Process done click for download." })
-
     } catch (error) {
       console.log(error)
     }

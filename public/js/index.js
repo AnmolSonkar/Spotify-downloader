@@ -110,8 +110,8 @@ function micOff() {
 }
 
 
- const socket = io('https://spotify-anmolsonkar.koyeb.app/')
-//const socket = io('http://localhost:3000/')
+//  const socket = io('https://spotify-anmolsonkar.koyeb.app/')
+const socket = io('http://localhost:3000/')
 
 let currentSearch;
 let screen = window.innerWidth;
@@ -145,7 +145,7 @@ socket.on("receive", (results) => {
 
     document.addEventListener("click", (event) => {
 
-        if (event.target === input && results) {
+        if (event.target === input && results && event.target.value) {
 
             display.style.display = "grid";
             input.style.borderBottomRightRadius = "0px";
@@ -168,120 +168,63 @@ socket.on("receive", (results) => {
     const list = [];
 
     results.forEach(item => {
-
         const li = document.createElement('li');
-
         li.innerHTML = ` <p><img src="${item.image}" loading="lazy" >${item.name} by ${item.artists}</p>`;
-
         li.querySelector('p').addEventListener('click', () => {
             iframe.src = `https://open.spotify.com/embed/track/${item.id}?utm_source=generator&theme=0`;
             document.querySelector(".footer").style.backgroundColor = "#282828";
+            socket.emit("select", item);
             micOff();
-
-            const button = document.createElement("button");
-            button.setAttribute("id", "Download");
-            button.textContent = "Click for downloading"
-            document.body.appendChild(button);
-
-            button.addEventListener("click", () => {
-
-                socket.emit("download", item);
-
-
-                socket.on("beforeProcess", data => {
-                    button.textContent = data.response;
-                })
-
-                socket.on('buffer', (result) => {
-
-                    button.removeAttribute("id");
-
-                    button.setAttribute("id", "Downloadfinal");
-
-                    const buttonfinal = document.getElementById("Downloadfinal");
-
-                    socket.on("afterProcess", data => {
-                        buttonfinal.textContent = data.response;
-                    })
-
-                    const audioBlob = new Blob([result.blob]);
-
-                    buttonfinal.addEventListener("click", () => {
-                        const url = URL.createObjectURL(audioBlob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${result.all.name}-${result.all.artists}.mp3`;
-                        document.body.appendChild(a);
-                        a.click();
-                    });
-                });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            })
-
-        });
-
+        })
         list.push(li)
     });
+
     display.append(...list);
+
 });
 
 
+socket.on("select", data => {
+    btn.data = data;
+    if (btn.data) {
+        btn.style.display = "flex"
+    }
 
-// const button = document.getElementById("Download");
-// socket.on("beforeProcess", data => {
-//     button.textContent = data.response;
-// })
-
-// socket.on('buffer', (result) => {
-
-//     button.removeAttribute("id");
-
-//     button.setAttribute("id", "Downloadfinal");
-
-//     const buttonfinal = document.getElementById("Downloadfinal");
-
-//     socket.on("afterProcess", data => {
-//         buttonfinal.textContent = data.response;
-//     })
-
-//     const audioBlob = new Blob([result.blob]);
-
-//     buttonfinal.addEventListener("click", () => {
-//         const url = URL.createObjectURL(audioBlob);
-//         const a = document.createElement('a');
-//         a.href = url;
-//         a.download = `${result.all.name}-${result.all.artists}.mp3`;
-//         document.body.appendChild(a);
-//         a.click();
-
-//         setTimeout(() => {
-//             buttonfinal.remove();
-//         }, 3000);
-//     });
-// });
+})
 
 
+const btn = document.getElementById("Download") || createDownloadButton();
+btn.style.display = "none"
 
+function createDownloadButton() {
+    const btn = document.createElement("button");
+    btn.id = "Download";
+    btn.textContent = "Download";
+    document.body.appendChild(btn);
+    return btn;
+}
+
+btn.addEventListener("click", () => {
+
+    socket.emit("download", btn.data);
+    socket.on("loading", data => {
+        btn.textContent = data.response;
+        btn.disabled = true
+    })
+});
+
+socket.on('buffer', (result) => {
+    const audioBlob = new Blob([result.blob]);
+    const url = URL.createObjectURL(audioBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${result.all.name}-${result.all.artists}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+    console.log("end")
+    btn.textContent = "Download";
+    btn.disabled = false
+
+});
