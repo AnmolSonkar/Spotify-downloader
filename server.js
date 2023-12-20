@@ -38,6 +38,7 @@ const download = new SpotifyDownloadApi({
   clientSecret
 });
 
+let screenSize;
 
 io.on('connect', (socket) => {
 
@@ -61,7 +62,7 @@ io.on('connect', (socket) => {
       const tokenData = await search.clientCredentialsGrant();
       const token = tokenData.body.access_token;
       search.setAccessToken(token);
-      socket.emit("loading", { response: "Loading...." })
+      socket.emit("loading", { response: `Loading.... - ${data.name}` })
       const audio = await download.downloadTrack(data.url)
       socket.emit("buffer", { blob: audio, all: data })
     } catch (error) {
@@ -71,10 +72,6 @@ io.on('connect', (socket) => {
 
 
 });
-
-
-let screenSize;
-
 
 app.get('/', (req, res) => {
   res.render('index');
