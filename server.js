@@ -12,8 +12,6 @@ const SpotifyWebApi = require('spotify-web-api-node');
 
 const SpotifyDownloadApi = require('spotifydl-core').default
 
-const fs = require('fs')
-
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);

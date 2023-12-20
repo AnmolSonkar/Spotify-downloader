@@ -4,136 +4,34 @@ const input = document.getElementById("search")
 let micbutton = document.querySelector(".mic");
 const display = document.querySelector(".display");
 
-html.style.backgroundColor = "white";
-
-select.addEventListener("click", theme);
-
-function theme() {
-    if (html.style.backgroundColor === "white") {
-        html.style.backgroundColor = "#282828";
-        select.src = "img/sun.png"
-    } else {
-        html.style.backgroundColor = "white";
-        select.src = "img/moon.png"
-    }
-}
-
-micbutton.addEventListener("click", micaction);
-let micImg = micbutton;
-micImg = "img/mic-off.png";
-
-function micaction() {
-    if (micImg === "img/mic-off.png") {
-        micOn();
-    } else {
-        micOff();
-    }
-    micbutton.src = micImg;
-}
-
-let recognition;
-let recognitionTimeout;
-
-function startSpeechRecognition() {
-    if ('webkitSpeechRecognition' in window) {
-        if (!recognition) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onstart = () => {
-                startRecognitionTimer();
-            };
-
-            recognition.onresult = async (event) => {
-                const result = event.results[event.results.length - 1];
-                const transcript = result[0].transcript;
-                input.value = transcript;
-                await search();
-                resetRecognitionTimer(); // Reset the timer on speech input
-            };
-
-            recognition.onaudioend = () => {
-                // The user stopped speaking, so start the 5-second timer
-                startRecognitionTimer();
-            };
-
-            recognition.onend = () => {
-                clearRecognitionTimer();
-            };
-        }
-
-        recognition.start();
-
-        input.addEventListener('input', () => {
-            resetRecognitionTimer(); // Reset the timer on user input
-            micOff();
-        });
-    } else {
-        alert('Web Speech API is not supported in this browser.');
-    }
-}
-
-function startRecognitionTimer() {
-    recognitionTimeout = setTimeout(() => {
-        micOff();
-    }, 5000);
-}
-
-function resetRecognitionTimer() {
-    clearTimeout(recognitionTimeout);
-    startRecognitionTimer();
-}
-
-function clearRecognitionTimer() {
-    clearTimeout(recognitionTimeout);
-}
-
-function stopSpeechRecognition() {
-    if (recognition) {
-        recognition.stop();
-        micbutton.src = "img/mic-off.png";
-        input.setAttribute("placeholder", "What do you want to listen to?");
-    }
-}
-
-function micOn() {
-    micImg = "img/mic-on.png";
-    input.setAttribute("placeholder", "Listening...");
-    startSpeechRecognition();
-}
-
-function micOff() {
-    micImg = "img/mic-off.png";
-    input.setAttribute("placeholder", "What do you want to listen to?");
-    stopSpeechRecognition();
-}
-
-
 const socket = io('https://spotify-downloader.koyeb.app/')
-// const socket = io('http://localhost:3000/')
 
 let currentSearch;
 let screen = window.innerWidth;
 
 input.addEventListener("input", () => {
+    const query = input.value.trim();
+    handleQuery(query);
+});
 
-    const query = input.value.trim()
+function micData(voice) {
+    input.value = voice;
+    const query = input.value.trim();
+    handleQuery(query);
+}
 
+function handleQuery(query) {
     currentSearch = query;
-
     if (query !== "") {
         socket.emit("send", query, screen);
-    }
-    else {
+    } else {
         display.innerHTML = "";
         display.style.display = "none";
         input.style.border = "1px solid #e1e2e4";
         input.style.borderRadius = "60px";
-
-
     }
-})
+}
+
 
 socket.on("receive", (results) => {
 
@@ -227,6 +125,118 @@ socket.on('buffer', (result) => {
     console.log("end")
     btn.textContent = "Download";
     btn.disabled = false
-    btn.style.backgroundColor = "#1ED760    ";
+    btn.style.backgroundColor = "#1ED760";
 
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const storedTheme = localStorage.getItem("theme");
+    html.style.backgroundColor = storedTheme === "dark" ? "#282828" : "white";
+    select.src = storedTheme === "dark" ? "img/sun.png" : "img/moon.png";
+
+    select.addEventListener("click", toggleTheme);
+
+    function toggleTheme() {
+        if (html.style.backgroundColor === "white") {
+            html.style.backgroundColor = "#282828";
+            select.src = "img/sun.png";
+            localStorage.setItem("theme", "dark");
+        } else {
+            html.style.backgroundColor = "white";
+            select.src = "img/moon.png";
+            localStorage.setItem("theme", "light");
+        }
+    }
+})
+
+micbutton.addEventListener("click", micaction);
+let micImg = micbutton;
+micImg = "img/mic-off.png";
+
+function micaction() {
+    if (micImg === "img/mic-off.png") {
+        micOn();
+    } else {
+        micOff();
+    }
+    micbutton.src = micImg;
+}
+
+let recognition;
+let recognitionTimeout;
+
+function startSpeechRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        if (!recognition) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                startRecognitionTimer();
+            };
+
+            recognition.onresult = async (event) => {
+                const result = event.results[event.results.length - 1];
+                const transcript = result[0].transcript;
+                micData(transcript)
+                resetRecognitionTimer(); // Reset the timer on speech input
+            };
+
+            recognition.onaudioend = () => {
+                // The user stopped speaking, so start the 5-second timer
+                startRecognitionTimer();
+            };
+
+            recognition.onend = () => {
+                clearRecognitionTimer();
+            };
+        }
+
+        recognition.start();
+
+        input.addEventListener('input', () => {
+            resetRecognitionTimer(); // Reset the timer on user input
+            micOff();
+        });
+    } else {
+        alert('Web Speech API is not supported in this browser.');
+    }
+}
+
+function startRecognitionTimer() {
+    recognitionTimeout = setTimeout(() => {
+        micOff();
+    }, 5000);
+}
+
+function resetRecognitionTimer() {
+    clearTimeout(recognitionTimeout);
+    startRecognitionTimer();
+}
+
+function clearRecognitionTimer() {
+    clearTimeout(recognitionTimeout);
+}
+
+function stopSpeechRecognition() {
+    if (recognition) {
+        recognition.stop();
+        micbutton.src = "img/mic-off.png";
+        input.setAttribute("placeholder", "What do you want to listen to?");
+    }
+}
+
+function micOn() {
+    micImg = "img/mic-on.png";
+    input.setAttribute("placeholder", "Listening...");
+    startSpeechRecognition();
+}
+
+function micOff() {
+    micImg = "img/mic-off.png";
+    input.setAttribute("placeholder", "What do you want to listen to?");
+    stopSpeechRecognition();
+}
