@@ -110,8 +110,8 @@ function micOff() {
 }
 
 
-//  const socket = io('https://spotify-downloader.koyeb.app/')
-const socket = io('http://localhost:3000/')
+const socket = io('https://spotify-downloader.koyeb.app/')
+// const socket = io('http://localhost:3000/')
 
 let currentSearch;
 let screen = window.innerWidth;
@@ -134,7 +134,6 @@ input.addEventListener("input", () => {
 
     }
 })
-
 
 socket.on("receive", (results) => {
 
@@ -190,8 +189,6 @@ socket.on("select", data => {
         btn.style.display = "flex"
 
     }
-
-
 })
 
 
