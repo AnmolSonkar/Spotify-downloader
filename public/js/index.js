@@ -110,7 +110,7 @@ function micOff() {
 }
 
 
-//  const socket = io('https://spotify-anmolsonkar.koyeb.app/')
+//  const socket = io('https://spotify-downloader.koyeb.app/')
 const socket = io('http://localhost:3000/')
 
 let currentSearch;
@@ -202,7 +202,7 @@ function createDownloadButton() {
     const btn = document.createElement("button");
     btn.id = "Download";
     btn.textContent = "Download";
-    btn.style.backgroundColor = "#4CAF50"
+    btn.style.backgroundColor = "#1ED760"
     document.body.appendChild(btn);
     return btn;
 }
@@ -230,6 +230,6 @@ socket.on('buffer', (result) => {
     console.log("end")
     btn.textContent = "Download";
     btn.disabled = false
-    btn.style.backgroundColor = "#4CAF50";
+    btn.style.backgroundColor = "#1ED760    ";
 
 });
